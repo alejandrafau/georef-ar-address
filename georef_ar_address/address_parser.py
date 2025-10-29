@@ -560,6 +560,33 @@ class AddressParser:
 
         return self._tokens_parse_tree(token_types)
 
+    def _transform_streett_token(self, tokens):
+        street_map = {
+            # AVENIDA
+            "avda": "av.",
+            "avnda": "av.",
+            "avenida": "av.",
+            "av": "av.",
+            # BOULEVARD
+            "bulevar": "bv.",
+            "bv": "bv.",
+            "bulevard": "bv.",
+            "boulevar": "bv.",
+            "boulevard": "bv.",
+            # PASAJE
+            "pasaje": "pje.",
+            "pje": "pje.",
+            # DIAGONAL
+            "diagonal": "diag.",
+            "diag": "diag"
+        }
+        for i, (value, tag) in enumerate(tokens):
+            if tag.startswith("STREET_TYPE"):
+                key = value.lower().strip(".")
+                new_value = street_map.get(key)
+                tokens[i] = (new_value,tag)
+        return tokens
+
     def parse(self, address):
         """Punto de entrada de la clase AddressParser. Toma una dirección como
         string e intenta extraer sus componentes, utilizando el proceso
@@ -583,6 +610,7 @@ class AddressParser:
 
         # 2) Tokenizar
         tokens = self._tokenize_address(processed)
+        tokens = self._transform_streett_token(tokens)
 
         # 3) Parsear y 4) Desambiguar
         visitor = self._parse_token_types([
